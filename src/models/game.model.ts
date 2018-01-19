@@ -41,8 +41,6 @@ export class Game {
 
     let amountOfSolution: number = 0;
 
-    console.log(this.suggestions);
-
     // find all possible solutions foreach row
     // find all possible solutions foreach column
     // match these values
@@ -63,9 +61,6 @@ export class Game {
       });
 
     }
-
-    console.log(rowsPossibilities);
-    console.log(columnsPossibilities);
 
     return amountOfSolution == 1;
   }
@@ -199,16 +194,99 @@ export class Game {
 
     const rowSuggestion = this.suggestions.rows.find(row => row.index == index);
 
-    console.log(index, rowSuggestion);
 
+    let initialPossibility = '';
 
-    for (let i = 0; i < this.gridFactor; i++) {
+    const add0ToPossibility = () => {
+      initialPossibility += '0';
+    };
+    const add1ToPossibility = () => {
+      initialPossibility += '1';
+    };
 
+    rowSuggestion.numbers.forEach((number: number) => {
 
+      for (let i = 0; i < number; i++) {
+        add1ToPossibility();
+      }
+
+      if (initialPossibility.length != this.gridFactor) {
+        add0ToPossibility();
+      }
+
+    });
+
+    // fill the last 0's
+    for (let i = initialPossibility.length; i < this.gridFactor; i++) {
+      add0ToPossibility();
+    }
+
+    // output.push(initialPossibility);
+
+    if (initialPossibility[initialPossibility.length - 1] == '0') {
+      // console.log('INITIAL', initialPossibility);
+      const a = this._put0BeforeEach1(initialPossibility, rowSuggestion.numbers.length, output);
+      if (a.length) console.log(a);
     }
 
 
+    // first: get the last 0 from initial and put this BEFORE each 0 and continue until you don't have any more 0's
+
+    // after that: get the last 0 from initial and put this AFTER each 0 and continue until you don't have any more 0's
+
+
+    // console.log(initialPossibility);
+
     return output;
+  }
+
+  private _put0BeforeEach1(value: string, amountOfNumbers: number, output: string[], amountAlreadyAdded: number = 0) {
+
+    const beforeLast0 = value.slice(0, value.length - 1);
+
+    const idxOfFirst1 = beforeLast0.indexOf('1', amountAlreadyAdded);
+    const newValue = [value.slice(0, idxOfFirst1), '0', value.slice(idxOfFirst1, value.length - 1)].join('');
+    const isAlreadyAdded = (stringToCheck: string): boolean => { // false when not yet added
+      return output.find(s => s == stringToCheck) != null;
+    };
+
+    if (value.indexOf('1') == -1) { // no 1 found
+      // console.log('no 1 found');
+      return output;
+    }
+
+    if (!isAlreadyAdded(value)) {
+      output.push(value);
+      return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
+    }
+
+    if (amountAlreadyAdded == amountOfNumbers && value[value.length - 1] == '0') {
+      // console.log('amount already added and 0 last');
+      return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
+    }
+
+    if (amountAlreadyAdded == amountOfNumbers && value[value.length - 1] == '1') {
+      // console.log('amount already added and 0 last');
+      return output;
+    }
+
+    if (amountAlreadyAdded) {
+      // console.log(value);
+      isAlreadyAdded(value);
+    }
+
+    if (isAlreadyAdded(value)) {
+      // console.log('is already added ');
+      return output;
+    }
+
+
+    // console.log(idxOfFirst1, newValue);
+    output.push(newValue);
+    amountAlreadyAdded++;
+    return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
+
+
   }
 
   private _getColumnPossibilities(index: number): string[] {

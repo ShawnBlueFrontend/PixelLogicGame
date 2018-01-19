@@ -25,7 +25,7 @@ export class NewGamePageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
-    this.reduxService.store.dispatch(ActionCreatorRedux.createNewGame());
+    this.reduxService.store.dispatch(ActionCreatorRedux.createNewGame(4));
 
     this._storeSubscription = this.reduxService.store.stateSubject.subscribe((state: StateRedux) => {
       this.state = state;
@@ -34,7 +34,7 @@ export class NewGamePageComponent implements OnInit, OnDestroy {
       this.grid = this.state.data.game.elements;
       this.suggestions = this.state.data.game.suggestions;
 
-      console.log(this.state.data.game.isGameSolvable());
+    this.state.data.game.isGameSolvable();
     });
 
   }
