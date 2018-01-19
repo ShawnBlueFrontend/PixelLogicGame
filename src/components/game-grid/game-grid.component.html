@@ -1,0 +1,37 @@
+<div class="game-grid__container">
+
+  <div class="game-grid__columns__suggestions" [ngStyle]="{'left': getSuggestionsRowWidth()}">
+      <span class="game-grid__suggestion column"
+            *ngFor="let suggestion of suggestions?.columns"
+            [innerHTML]="getNumbers(suggestion.numbers, 'col')">
+      </span>
+  </div>
+
+  <div class="game-grid__row__grid__wrapper" [ngStyle]="{'padding-top': getSuggestionsColumnHeight()}">
+
+    <div class="game-grid__row__suggestions" [ngStyle]="{'width': getSuggestionsRowWidth()}">
+    <span class="game-grid__suggestion"
+          *ngFor="let suggestion of suggestions?.rows">
+       {{getNumbers(suggestion.numbers)}}
+    </span>
+    </div>
+
+
+    <div class="game-grid__grid" [ngStyle]="{'width': getGridWidth()}">
+
+
+      <div class="game-grid__row" *ngFor="let row of grid">
+
+        <div class="game-grid__row__element {{element.mode}}"
+             *ngFor="let element of row"
+             (click)="selectElement(element)"
+             (contextmenu)="excludeElement(element)">
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+</div>

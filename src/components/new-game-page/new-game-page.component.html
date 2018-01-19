@@ -1,0 +1,17 @@
+<div class="new-game__container">
+
+  <div class="new-game__grid-factor">
+
+    <label for="new-game__gridfactor">Gridfactor</label>
+    <input id="new-game__gridfactor" type="number" min="2"
+           [(ngModel)]="gridFactor"
+           (ngModelChange)="onGridFactorChanged()">
+
+  </div>
+
+  <game-grid [grid]="grid"
+             [suggestions]="suggestions"
+             (onElementClicked)="onElementClicked($event)">
+  </game-grid>
+
+</div>

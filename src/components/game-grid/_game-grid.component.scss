@@ -1,0 +1,94 @@
+$grid-element: 30px;
+
+game-grid {
+
+  .game-grid__container {
+    position: relative;
+
+    .game-grid__row__grid__wrapper {
+      display: flex;
+
+      .game-grid__grid {
+
+        display: flex;
+        flex-direction: column;
+
+        .game-grid__row {
+
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+
+          .game-grid__row__element {
+
+            border: solid black thin;
+            width: $grid-element;
+            height: $grid-element;
+
+            background-color: white;
+
+            &.selected {
+              background-color: green;
+            }
+
+            &.excluded {
+              background-color: red;
+            }
+
+          }
+        }
+
+      }
+
+      .game-grid__row__suggestions {
+
+        display: flex;
+        flex-direction: column;
+
+        span {
+          display: flex;
+          align-items: center;
+
+          border-bottom: solid grey thin;
+          border-top: solid grey thin;
+          border-right: solid black thin;
+
+          height: $grid-element;
+        }
+
+      }
+    }
+
+    .game-grid__columns__suggestions {
+      position: absolute;
+
+      top: 0;
+
+      display: flex;
+      flex-direction: row;
+
+      .game-grid__suggestion {
+        display: flex;
+        align-items: center;
+
+        border: solid grey thin;
+        border-top: none;
+
+        width: $grid-element;
+
+        &.column {
+          display: block;
+          text-align: center;
+          width: 28px;
+          span {
+            display: flex;
+            flex-direction: column;
+            width: $grid-element;
+          }
+        }
+
+      }
+    }
+  }
+
+}

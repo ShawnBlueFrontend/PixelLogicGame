@@ -1,0 +1,7 @@
+export enum ActionType {
+
+  CREATE_NEW_GAME,
+  CHANGE_GRID_FACTOR,
+  CHANGE_GRID_ELEMENT
+
+}
