@@ -62,6 +62,69 @@ export class Game {
 
     }
 
+    console.log(rowsPossibilities);
+    console.log(columnsPossibilities);
+
+    // remove all the possibilities that are not possible
+
+    const isPossibleInColumn = (index: number, rowPossibility: string): boolean => {
+      // console.log(rowPossibility);
+
+      columnsPossibilities[index].possibilities.find(possibility =>);
+
+      return true;
+    };
+
+    const isPossibleInRow = (index: number, columnPossibility: string): boolean => {
+      // console.log(columnPossibility);
+
+      console.log(index, columnPossibility);
+      columnsPossibilities.forEach(column => {
+
+      });
+
+
+      return true;
+    };
+
+    const matchPossibilities = (item, type = 'col' || 'row') => {
+      for (let i = item.possibilities.length - 1; i >= 0; i--) {
+
+        const possibility = item.possibilities[i];
+
+        if (possibility.indexOf('1') == -1) {
+          continue;
+        }
+
+        console.log(possibility);
+
+        switch (type) {
+
+          case 'row': {
+            if (!isPossibleInColumn(i, possibility)) {
+              item.possibilities.splice(i, 1);
+            }
+            break;
+          }
+
+          case 'col': {
+            if (!isPossibleInRow(i, possibility)) {
+              item.possibilities.splice(i, 1);
+            }
+            break;
+          }
+        }
+
+      }
+    };
+
+    rowsPossibilities.forEach((row) => {
+      matchPossibilities(row, 'row');
+    });
+    columnsPossibilities.forEach((col) => {
+      matchPossibilities(col, 'col');
+    });
+
     return amountOfSolution == 1;
   }
 
@@ -188,12 +251,8 @@ export class Game {
 
   }
 
-  private _getRowPossibilities(index: number): string[] {
 
-    const output = [];
-
-    const rowSuggestion = this.suggestions.rows.find(row => row.index == index);
-
+  private _setInitialValue(suggestion: any): string {
 
     let initialPossibility = '';
 
@@ -204,7 +263,7 @@ export class Game {
       initialPossibility += '1';
     };
 
-    rowSuggestion.numbers.forEach((number: number) => {
+    suggestion.numbers.forEach((number: number) => {
 
       for (let i = 0; i < number; i++) {
         add1ToPossibility();
@@ -221,77 +280,98 @@ export class Game {
       add0ToPossibility();
     }
 
-    // output.push(initialPossibility);
-
-    if (initialPossibility[initialPossibility.length - 1] == '0') {
-      // console.log('INITIAL', initialPossibility);
-      const a = this._put0BeforeEach1(initialPossibility, rowSuggestion.numbers.length, output);
-      if (a.length) console.log(a);
-    }
-
-
-    // first: get the last 0 from initial and put this BEFORE each 0 and continue until you don't have any more 0's
-
-    // after that: get the last 0 from initial and put this AFTER each 0 and continue until you don't have any more 0's
-
-
-    // console.log(initialPossibility);
-
-    return output;
+    return initialPossibility;
   }
 
-  private _put0BeforeEach1(value: string, amountOfNumbers: number, output: string[], amountAlreadyAdded: number = 0) {
+  private _getRowPossibilities(index: number): string[] {
 
-    const beforeLast0 = value.slice(0, value.length - 1);
+    const rowSuggestion = this.suggestions.rows.find(row => row.index == index);
+    const initialPossibility = this._setInitialValue(rowSuggestion);
 
-    const idxOfFirst1 = beforeLast0.indexOf('1', amountAlreadyAdded);
-    const newValue = [value.slice(0, idxOfFirst1), '0', value.slice(idxOfFirst1, value.length - 1)].join('');
-    const isAlreadyAdded = (stringToCheck: string): boolean => { // false when not yet added
-      return output.find(s => s == stringToCheck) != null;
-    };
-
-    if (value.indexOf('1') == -1) { // no 1 found
-      // console.log('no 1 found');
-      return output;
-    }
-
-    if (!isAlreadyAdded(value)) {
-      output.push(value);
-      return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
-    }
-
-    if (amountAlreadyAdded == amountOfNumbers && value[value.length - 1] == '0') {
-      // console.log('amount already added and 0 last');
-      return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
-    }
-
-    if (amountAlreadyAdded == amountOfNumbers && value[value.length - 1] == '1') {
-      // console.log('amount already added and 0 last');
-      return output;
-    }
-
-    if (amountAlreadyAdded) {
-      // console.log(value);
-      isAlreadyAdded(value);
-    }
-
-    if (isAlreadyAdded(value)) {
-      // console.log('is already added ');
-      return output;
-    }
-
-
-    // console.log(idxOfFirst1, newValue);
-    output.push(newValue);
-    amountAlreadyAdded++;
-    return this._put0BeforeEach1(newValue, amountOfNumbers, output, amountAlreadyAdded);
-
-
+    return this._calculatePossibilities(initialPossibility, rowSuggestion);
   }
 
   private _getColumnPossibilities(index: number): string[] {
+    const columnSuggestion = this.suggestions.columns.find(row => row.index == index);
+    const initialPossibility = this._setInitialValue(columnSuggestion);
 
-    return [];
+    return this._calculatePossibilities(initialPossibility, columnSuggestion);
+  }
+
+  private _calculatePossibilities(initial: string, rowSuggestion: { index: number, numbers: number[] }): string[] {
+
+    const output = [initial];
+
+    if (!rowSuggestion.numbers.length) {
+      return output;
+    }
+
+    const addOption = (option: string) => {
+
+      if (output.find(element => element == option)) {
+        return;
+      }
+
+      output.push(option);
+    };
+
+    const moveLast0 = (indexOf0: number, toAdd: string = '0') => {
+
+      const valueToChange = initial.slice(0, indexOf0) + initial.slice(indexOf0 + toAdd.length);
+
+      if (indexOf0 == 0) {
+        return;
+      }
+
+      for (let i = indexOf0 - 1; i >= 0; i--) {
+
+        if (valueToChange[i] == '1' && valueToChange[i - 1] == '1') {
+          continue;
+        }
+
+        const newValue = valueToChange.slice(0, i) + toAdd + valueToChange.slice(i);
+
+        addOption(newValue);
+      }
+
+    };
+
+    const getZerosToAdd = (amount: number): string => {
+      let zeros = '';
+
+      if (!amount) {
+        amount = 1;
+      }
+
+      for (let i = 0; i < amount; i++) {
+        zeros += '0';
+      }
+      return zeros;
+    };
+
+    for (let i = initial.length - 1; i >= 0; i--) {
+
+      let number = '';
+      let isPreviousAlso0: boolean = false;
+      let counter: number = 0;
+
+      do {
+        number = initial[i - counter];
+        isPreviousAlso0 = initial[i - counter - 1] == '0';
+        const isBetween1s = initial[i - counter - 1] == '1' && initial[i - counter + 1] == '1';
+
+        if (isBetween1s || number != '0') {
+          break;
+        }
+
+        moveLast0(i - counter, getZerosToAdd(counter + 1));
+
+        counter++;
+      } while (isPreviousAlso0);
+
+    }
+
+    return output;
   }
 
 }
