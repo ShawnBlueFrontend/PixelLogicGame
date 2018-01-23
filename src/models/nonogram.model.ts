@@ -160,9 +160,39 @@ export class Nonogram {
   }
 
   private _tryToSolveThePuzzle(elements, rowPossibilities, columnPossibilities): void {
-    console.log(elements);
+
+    /*
+    1. start empty board
+    2. Add 1 row (first possibility)
+    3. Match it if it's even possible with the column constraints (row 1 ==> all columns position 1 merged ==> row n columns pos n merged)
+    4. Matches? Yes: continue with the next row ; NO: take another row possibility (if no possibilities left, go back to the previous row, and take another possibility)
+    5. If no possibilities for row n ==> no possibilities
+    6. return to 2 with different row
+    7. If to much possibilities for row n ==> not solvable
+     */
+
     console.log(rowPossibilities);
-    console.log(columnPossibilities);
+    const newElements = Object.assign({}, elements);
+
+    for (let i = rowPossibilities.length - 1; i >= 0; i--) {
+      console.log(i);
+      if (!this._tryRowPossibility(rowPossibilities[i])) {
+        rowPossibilities.splice(i, 1);
+      }
+    }
+
+    console.log(rowPossibilities);
+
+  }
+
+  private _tryRowPossibility(possibility): boolean {
+    console.log(possibility);
+    return false;
+  }
+
+  private _tryColumnPossibility(possibility): boolean {
+
+    return false;
   }
 
 }
