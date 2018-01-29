@@ -1,3 +1,5 @@
+import {GridMode} from "../enums/grid_mode.enum";
+
 export class Nonogram {
 
   private _gridFactor: number;
@@ -161,6 +163,78 @@ export class Nonogram {
 
   private _tryToSolveThePuzzle(elements, rowPossibilities, columnPossibilities): void {
 
+
+    const newRowPos = Object.assign([], rowPossibilities);
+    const newColPos = Object.assign([], columnPossibilities);
+
+    // 1. start empty board
+    const newBoard = Object.assign([], elements);
+    console.log(elements);
+
+    let rowCounter = 0;
+
+    const addRow = (rowIndex, rowPoss) => {
+
+      for (let i = 0; i < rowPoss.length; i++) {
+        newBoard[rowIndex][i].mode = rowPoss[i] == '1' ? GridMode.SELECTED : GridMode.EMPTY;
+      }
+
+      if (!isPuzzleStillPossible()) {
+        for (let i = 0; i < rowPoss.length; i++) {
+          newBoard[rowIndex][i].mode = GridMode.EMPTY;
+        }
+
+        return false;
+      }
+
+      return true;
+    };
+
+    const addCol = (colIndex, colPoss) => {
+
+    };
+
+    const isPuzzleStillPossible = (): boolean => {
+
+      // match the rows with the column poss
+
+      for (let i = 0; i < newBoard.length; i++) {
+
+        let column = '';
+
+        for (let j = 0; j < newBoard.length; j++) {
+          column += newBoard[i][j].mode == GridMode.SELECTED ? '1' : '0';
+        }
+
+        console.log(`${i}`, column);
+
+      }
+      console.log('');
+
+      return true;
+    };
+
+    do {
+
+      for (let i = newRowPos[rowCounter].possibilities.length - 1; i >= 0; i--) {
+        const canAddRow = addRow(rowCounter, newRowPos[rowCounter].possibilities[i]);
+
+        if (canAddRow) {
+          // continue to the next row
+          // console.log('continue to the next row')
+
+        } else {
+          // remove possibility
+          // continue to next possibility
+          newRowPos[rowCounter].possibilities.splice(i, 1);
+
+          // console.log('continue to the next poss');
+        }
+      }
+
+
+    } while (++rowCounter < newRowPos.length && this._hasPossibilities(newRowPos) && this._hasPossibilities(newColPos));
+
     /*
     1. start empty board
     2. Add 1 row (first possibility)
@@ -170,29 +244,8 @@ export class Nonogram {
     6. return to 2 with different row
     7. If to much possibilities for row n ==> not solvable
      */
-
-    console.log(rowPossibilities);
-    const newElements = Object.assign({}, elements);
-
-    for (let i = rowPossibilities.length - 1; i >= 0; i--) {
-      console.log(i);
-      if (!this._tryRowPossibility(rowPossibilities[i])) {
-        rowPossibilities.splice(i, 1);
-      }
-    }
-
-    console.log(rowPossibilities);
-
   }
 
-  private _tryRowPossibility(possibility): boolean {
-    console.log(possibility);
-    return false;
-  }
-
-  private _tryColumnPossibility(possibility): boolean {
-
-    return false;
-  }
+  private _hasPossibilities = (possibilities): boolean => possibilities.some((possibilty) => possibilty.possibilities.length);
 
 }
