@@ -1,4 +1,5 @@
-import {GridMode} from "../enums/grid_mode.enum";
+import {GridMode} from '../enums/grid_mode.enum';
+import {GridElement} from './grid_element.model';
 
 export class Nonogram {
 
@@ -9,11 +10,6 @@ export class Nonogram {
   }
 
   public isSolvable(elements, suggestions): boolean {
-    let amountOfSolution: number = 0;
-
-    // find all possible solutions foreach row
-    // find all possible solutions foreach column
-    // match these values
 
     const rowsPossibilities = [];
     const columnsPossibilities = [];
@@ -32,9 +28,8 @@ export class Nonogram {
 
     }
 
-    this._tryToSolveThePuzzle(elements, rowsPossibilities, columnsPossibilities);
 
-    return amountOfSolution == 1;
+    return this._getAmountOfSolutions(rowsPossibilities, columnsPossibilities) == 1;
   }
 
 
@@ -83,7 +78,6 @@ export class Nonogram {
 
     return this._calculatePossibilities(initialPossibility, columnSuggestion);
   }
-
 
   private _calculatePossibilities(initial: string, rowSuggestion: { index: number, numbers: number[] }): string[] {
 
@@ -161,91 +155,140 @@ export class Nonogram {
     return output;
   }
 
-  private _tryToSolveThePuzzle(elements, rowPossibilities, columnPossibilities): void {
+  private _createTheGrid(): any {
 
+    const output = [];
+    const gridFactorAmount = Math.pow(this._gridFactor, 2);
 
-    const newRowPos = Object.assign([], rowPossibilities);
-    const newColPos = Object.assign([], columnPossibilities);
+    let rowIndex = 0;
+    let columnIndex = 0;
 
-    // 1. start empty board
-    const newBoard = Object.assign([], elements);
-    console.log(elements);
-
-    let rowCounter = 0;
-
-    const addRow = (rowIndex, rowPoss) => {
-
-      for (let i = 0; i < rowPoss.length; i++) {
-        newBoard[rowIndex][i].mode = rowPoss[i] == '1' ? GridMode.SELECTED : GridMode.EMPTY;
+    for (let i = 0; i < gridFactorAmount; i++) {
+      if (!output[columnIndex]) {
+        output[columnIndex] = [];
       }
 
-      if (!isPuzzleStillPossible()) {
-        for (let i = 0; i < rowPoss.length; i++) {
-          newBoard[rowIndex][i].mode = GridMode.EMPTY;
+      output[columnIndex][rowIndex++] = new GridElement();
+
+      if (rowIndex == this._gridFactor) {
+        rowIndex = 0;
+        columnIndex++;
+      }
+
+    }
+
+    return output;
+  }
+
+
+  private _getAmountOfSolutions(rowsPossibilities: any[], columnsPossibilities: any[]): number {
+
+
+    let amountOfSolutions = 0;
+
+    const addModeToPosition = (board, rowIndex, columnIndex, mode) => {
+      board[rowIndex][columnIndex].mode = mode;
+    };
+
+    const fillBoard = (row, rowIndex) => {
+
+      if (row.indexOf('1') == -1) {
+        return;
+      }
+
+      console.log(row, rowIndex);
+
+      const newBoard = this._createTheGrid();
+
+
+      for (let i = 0; i < rowsPossibilities.length; i++) {
+
+        if (i == rowIndex) {
+
+          for (let indexRowPossChar = 0; indexRowPossChar < row.length; indexRowPossChar++) {
+            addModeToPosition(newBoard, rowIndex, indexRowPossChar, row[indexRowPossChar] == '1' ? GridMode.SELECTED : GridMode.EMPTY);
+          }
+
+          console.log(Object.assign({}, newBoard));
+
+          continue;
         }
 
-        return false;
-      }
 
-      return true;
-    };
-
-    const addCol = (colIndex, colPoss) => {
-
-    };
-
-    const isPuzzleStillPossible = (): boolean => {
-
-      // match the rows with the column poss
-
-      for (let i = 0; i < newBoard.length; i++) {
-
-        let column = '';
-
-        for (let j = 0; j < newBoard.length; j++) {
-          column += newBoard[i][j].mode == GridMode.SELECTED ? '1' : '0';
+        for (let j = 0; j < rowsPossibilities[i].possibilities.length; j++) {
+          // console.log(rowsPossibilities[i].possibilities[j]);
         }
 
-        console.log(`${i}`, column);
-
       }
-      console.log('');
 
-      return true;
+      amountOfSolutions = this._isGridCorrect(newBoard, columnsPossibilities) ? amountOfSolutions++ : amountOfSolutions;
+
+      if (amountOfSolutions > 1) {
+        return amountOfSolutions;
+      }
+
     };
+
+    for (let iRow = 0; iRow < rowsPossibilities.length; iRow++) {
+
+      rowsPossibilities[iRow].possibilities.forEach((rowPoss) => {
+        this._fillBoardForEachRow(rowPoss, iRow, rowsPossibilities, columnsPossibilities);
+      });
+
+    }
+
+
+    return amountOfSolutions;
+  }
+
+  private _fillBoardForEachRow = (row, rowIndex, rowsPossibilities: any[], columnsPossibilities): number => {
+
+    const addModeToPosition = (board, rowI, columnIndex, mode) => {
+      board[rowI][columnIndex].mode = mode;
+    };
+
+    let amountOfPossibilitiesLeft = rowsPossibilities.reduce((oldValue, data) => data.index != rowIndex ? oldValue += data.possibilities.length : oldValue, 0);
+    let amountOfGridCorrect = 0;
 
     do {
 
-      for (let i = newRowPos[rowCounter].possibilities.length - 1; i >= 0; i--) {
-        const canAddRow = addRow(rowCounter, newRowPos[rowCounter].possibilities[i]);
+      const newBoard = this._createTheGrid();
 
-        if (canAddRow) {
-          // continue to the next row
-          // console.log('continue to the next row')
+      for (let i = 0; i < rowsPossibilities.length; i++) {
 
-        } else {
-          // remove possibility
-          // continue to next possibility
-          newRowPos[rowCounter].possibilities.splice(i, 1);
-
-          // console.log('continue to the next poss');
+        if (i == rowIndex) {
+          for (let indexRowPossChar = 0; indexRowPossChar < row.length; indexRowPossChar++) {
+            addModeToPosition(newBoard, rowIndex, indexRowPossChar, row[indexRowPossChar] == '1' ? GridMode.SELECTED : GridMode.EMPTY);
+          }
+          continue;
         }
+
+        // add a row possibility we didnt had before
+        // loop over rows
+        // loop over possibilities
+        
+        console.log(rowsPossibilities[i]);
       }
 
+      console.log(Object.assign({}, newBoard));
 
-    } while (++rowCounter < newRowPos.length && this._hasPossibilities(newRowPos) && this._hasPossibilities(newColPos));
+      amountOfGridCorrect = this._isGridCorrect(newBoard, columnsPossibilities) ? amountOfGridCorrect++ : amountOfGridCorrect;
 
-    /*
-    1. start empty board
-    2. Add 1 row (first possibility)
-    3. Match it if it's even possible with the column constraints (row 1 ==> all columns position 1 merged ==> row n columns pos n merged)
-    4. Matches? Yes: continue with the next row ; NO: take another row possibility (if no possibilities left, go back to the previous row, and take another possibility)
-    5. If no possibilities for row n ==> no possibilities
-    6. return to 2 with different row
-    7. If to much possibilities for row n ==> not solvable
-     */
-  }
+      if (amountOfGridCorrect > 1) {
+        return amountOfGridCorrect;
+      }
 
-  private _hasPossibilities = (possibilities): boolean => possibilities.some((possibilty) => possibilty.possibilities.length);
+    } while (amountOfPossibilitiesLeft-- == 0);
+
+
+    return amountOfGridCorrect;
+
+  };
+
+  private _isGridCorrect = (board, columnsPossibilities: any[]): boolean => {
+
+
+    return true;
+  };
 
 }
