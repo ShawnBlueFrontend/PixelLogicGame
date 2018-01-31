@@ -34,7 +34,8 @@ export class NewGamePageComponent implements OnInit, OnDestroy {
       this.grid = this.state.data.game.elements;
       this.suggestions = this.state.data.game.suggestions;
 
-    this.state.data.game.isGameSolvable();
+      console.log(this.state.data.game.isGameSolvable());
+
     });
 
   }

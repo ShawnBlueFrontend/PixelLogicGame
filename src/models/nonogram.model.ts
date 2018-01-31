@@ -183,110 +183,108 @@ export class Nonogram {
 
   private _getAmountOfSolutions(rowsPossibilities: any[], columnsPossibilities: any[]): number {
 
-
     let amountOfSolutions = 0;
-
-    const addModeToPosition = (board, rowIndex, columnIndex, mode) => {
-      board[rowIndex][columnIndex].mode = mode;
-    };
-
-    const fillBoard = (row, rowIndex) => {
-
-      if (row.indexOf('1') == -1) {
-        return;
-      }
-
-      console.log(row, rowIndex);
-
-      const newBoard = this._createTheGrid();
-
-
-      for (let i = 0; i < rowsPossibilities.length; i++) {
-
-        if (i == rowIndex) {
-
-          for (let indexRowPossChar = 0; indexRowPossChar < row.length; indexRowPossChar++) {
-            addModeToPosition(newBoard, rowIndex, indexRowPossChar, row[indexRowPossChar] == '1' ? GridMode.SELECTED : GridMode.EMPTY);
-          }
-
-          console.log(Object.assign({}, newBoard));
-
-          continue;
-        }
-
-
-        for (let j = 0; j < rowsPossibilities[i].possibilities.length; j++) {
-          // console.log(rowsPossibilities[i].possibilities[j]);
-        }
-
-      }
-
-      amountOfSolutions = this._isGridCorrect(newBoard, columnsPossibilities) ? amountOfSolutions++ : amountOfSolutions;
-
-      if (amountOfSolutions > 1) {
-        return amountOfSolutions;
-      }
-
-    };
 
     for (let iRow = 0; iRow < rowsPossibilities.length; iRow++) {
 
-      rowsPossibilities[iRow].possibilities.forEach((rowPoss) => {
-        this._fillBoardForEachRow(rowPoss, iRow, rowsPossibilities, columnsPossibilities);
-      });
+      for (let i = 0; i < rowsPossibilities[iRow].possibilities.length; i++) {
+        const board = this._setInitialBoard(rowsPossibilities[iRow].possibilities[i], iRow, rowsPossibilities);
+
+        let indexRow = 0;
+        let indexRowPoss = 0;
+
+        const resetIndexes = () => {
+          indexRow++;
+          indexRowPoss = 0;
+        };
+
+        do {
+
+          if (indexRow == iRow) {
+            resetIndexes();
+            continue;
+          }
+
+          const row = rowsPossibilities[iRow].possibilities[indexRowPoss];
+
+          if (row) {
+            this._addRowToBoard(board, row, indexRow);
+
+            amountOfSolutions = this._isGridCorrect(board, columnsPossibilities) ? ++amountOfSolutions : amountOfSolutions;
+
+            if (amountOfSolutions >= 2) {
+              return amountOfSolutions;
+            }
+
+            indexRowPoss++;
+
+          } else {
+            resetIndexes();
+          }
+
+        } while (indexRow > rowsPossibilities.length);
+
+        amountOfSolutions = this._isGridCorrect(board, columnsPossibilities) ? ++amountOfSolutions : amountOfSolutions;
+
+        if (amountOfSolutions >= 2) {
+          return amountOfSolutions;
+        }
+      }
 
     }
-
 
     return amountOfSolutions;
   }
 
-  private _fillBoardForEachRow = (row, rowIndex, rowsPossibilities: any[], columnsPossibilities): number => {
 
-    const addModeToPosition = (board, rowI, columnIndex, mode) => {
-      board[rowI][columnIndex].mode = mode;
+  private _setInitialBoard = (initialRow: string, initialRowIndex: number, rowsPossibilities: any[]) => {
+
+    const board = this._createTheGrid();
+
+    for (let i = 0; i < rowsPossibilities.length; i++) {
+      if (initialRowIndex == i) {
+
+        this._addRowToBoard(board, initialRow, i);
+
+        continue;
+      }
+
+      this._addRowToBoard(board, rowsPossibilities[i].possibilities[0], i);
+    }
+
+    return Object.assign({}, board);
+  };
+
+  private _addRowToBoard = (board, row, rowIndex) => {
+
+    const addModeToPosition = (columnIndex, mode) => {
+      board[rowIndex][columnIndex].mode = mode;
     };
 
-    let amountOfPossibilitiesLeft = rowsPossibilities.reduce((oldValue, data) => data.index != rowIndex ? oldValue += data.possibilities.length : oldValue, 0);
-    let amountOfGridCorrect = 0;
-
-    do {
-
-      const newBoard = this._createTheGrid();
-
-      for (let i = 0; i < rowsPossibilities.length; i++) {
-
-        if (i == rowIndex) {
-          for (let indexRowPossChar = 0; indexRowPossChar < row.length; indexRowPossChar++) {
-            addModeToPosition(newBoard, rowIndex, indexRowPossChar, row[indexRowPossChar] == '1' ? GridMode.SELECTED : GridMode.EMPTY);
-          }
-          continue;
-        }
-
-        // add a row possibility we didnt had before
-        // loop over rows
-        // loop over possibilities
-        
-        console.log(rowsPossibilities[i]);
-      }
-
-      console.log(Object.assign({}, newBoard));
-
-      amountOfGridCorrect = this._isGridCorrect(newBoard, columnsPossibilities) ? amountOfGridCorrect++ : amountOfGridCorrect;
-
-      if (amountOfGridCorrect > 1) {
-        return amountOfGridCorrect;
-      }
-
-    } while (amountOfPossibilitiesLeft-- == 0);
-
-
-    return amountOfGridCorrect;
-
+    for (let indexRowPossChar = 0; indexRowPossChar < row.length; indexRowPossChar++) {
+      addModeToPosition(indexRowPossChar, row[indexRowPossChar] == '1' ? GridMode.SELECTED : GridMode.EMPTY);
+    }
   };
+
 
   private _isGridCorrect = (board, columnsPossibilities: any[]): boolean => {
 
+    for (let i = 0; i < this._gridFactor; i++) {
+
+      let column = '';
+
+      for (let j = 0; j < this._gridFactor; j++) {
+        column += board[j][i].mode == GridMode.SELECTED ? '1' : '0';
+      }
+      console.log('');
+      console.log(columnsPossibilities[i].possibilities);
+      console.log(column);
+      console.log('');
+      if (columnsPossibilities[i].possibilities.indexOf(column) == -1) {
+        return false;
+      }
+
+    }
 
     return true;
   };
