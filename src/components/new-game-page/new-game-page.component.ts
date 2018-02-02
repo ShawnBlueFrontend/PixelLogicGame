@@ -18,6 +18,8 @@ export class NewGamePageComponent implements OnInit, OnDestroy {
   public grid: GridElement[][] = [];
   public suggestions: Suggestions;
 
+  public isPuzzleSolvable: boolean = false;
+
   private _storeSubscription: any;
 
   constructor(private reduxService: ReduxService) {
@@ -34,7 +36,7 @@ export class NewGamePageComponent implements OnInit, OnDestroy {
       this.grid = this.state.data.game.elements;
       this.suggestions = this.state.data.game.suggestions;
 
-      console.log(this.state.data.game.isGameSolvable());
+      this.isPuzzleSolvable = this.state.data.game.isGameSolvable();
 
     });
 
