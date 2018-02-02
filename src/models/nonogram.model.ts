@@ -189,6 +189,7 @@ export class Nonogram {
 
       for (let i = 0; i < rowsPossibilities[iRow].possibilities.length; i++) {
         const board = this._setInitialBoard(rowsPossibilities[iRow].possibilities[i], iRow, rowsPossibilities);
+        amountOfSolutions = this._isGridCorrect(board, columnsPossibilities, previousSolutions) ? ++amountOfSolutions : amountOfSolutions;
 
         let indexRow = 0;
         let indexRowPoss = 0;
@@ -234,7 +235,7 @@ export class Nonogram {
     }
 
     return amountOfSolutions;
-  } 
+  }
 
 
   private _setInitialBoard(initialRow: string, initialRowIndex: number, rowsPossibilities: any[]) {
@@ -274,6 +275,7 @@ export class Nonogram {
       for (let j = 0; j < board[i].length; j++) {
         boardSequence += board[i][j].mode == GridMode.SELECTED ? '1' : '0';
       }
+      boardSequence += ' - ';
     }
 
     if (previousSolutions.indexOf(boardSequence) != -1) {
