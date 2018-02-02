@@ -28,7 +28,6 @@ export class Nonogram {
 
     }
 
-
     return this._getAmountOfSolutions(rowsPossibilities, columnsPossibilities) == 1;
   }
 
@@ -183,6 +182,7 @@ export class Nonogram {
 
   private _getAmountOfSolutions(rowsPossibilities: any[], columnsPossibilities: any[]): number {
 
+    const previousSolutions = [];
     let amountOfSolutions = 0;
 
     for (let iRow = 0; iRow < rowsPossibilities.length; iRow++) {
@@ -210,7 +210,7 @@ export class Nonogram {
           if (row) {
             this._addRowToBoard(board, row, indexRow);
 
-            amountOfSolutions = this._isGridCorrect(board, columnsPossibilities) ? ++amountOfSolutions : amountOfSolutions;
+            amountOfSolutions = this._isGridCorrect(board, columnsPossibilities, previousSolutions) ? ++amountOfSolutions : amountOfSolutions;
 
             if (amountOfSolutions >= 2) {
               return amountOfSolutions;
@@ -224,7 +224,7 @@ export class Nonogram {
 
         } while (indexRow > rowsPossibilities.length);
 
-        amountOfSolutions = this._isGridCorrect(board, columnsPossibilities) ? ++amountOfSolutions : amountOfSolutions;
+        amountOfSolutions = this._isGridCorrect(board, columnsPossibilities, previousSolutions) ? ++amountOfSolutions : amountOfSolutions;
 
         if (amountOfSolutions >= 2) {
           return amountOfSolutions;
@@ -234,10 +234,10 @@ export class Nonogram {
     }
 
     return amountOfSolutions;
-  }
+  } 
 
 
-  private _setInitialBoard = (initialRow: string, initialRowIndex: number, rowsPossibilities: any[]) => {
+  private _setInitialBoard(initialRow: string, initialRowIndex: number, rowsPossibilities: any[]) {
 
     const board = this._createTheGrid();
 
@@ -252,10 +252,10 @@ export class Nonogram {
       this._addRowToBoard(board, rowsPossibilities[i].possibilities[0], i);
     }
 
-    return Object.assign({}, board);
+    return Object.assign([], board);
   };
 
-  private _addRowToBoard = (board, row, rowIndex) => {
+  private _addRowToBoard(board, row, rowIndex) {
 
     const addModeToPosition = (columnIndex, mode) => {
       board[rowIndex][columnIndex].mode = mode;
@@ -266,8 +266,30 @@ export class Nonogram {
     }
   };
 
+  private _isGridAlreadeyAdded(board, previousSolutions: any[]): boolean {
 
-  private _isGridCorrect = (board, columnsPossibilities: any[]): boolean => {
+    let boardSequence = '';
+
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        boardSequence += board[i][j].mode == GridMode.SELECTED ? '1' : '0';
+      }
+    }
+
+    if (previousSolutions.indexOf(boardSequence) != -1) {
+      return true;
+    }
+
+    previousSolutions.push(boardSequence);
+
+    return false;
+  }
+
+  private _isGridCorrect(board, columnsPossibilities: any[], previousSolutions: any[]): boolean {
+
+    if (this._isGridAlreadeyAdded(board, previousSolutions)) {
+      return false; // grid is not correct, because it was already added
+    }
 
     for (let i = 0; i < this._gridFactor; i++) {
 
@@ -276,10 +298,7 @@ export class Nonogram {
       for (let j = 0; j < this._gridFactor; j++) {
         column += board[j][i].mode == GridMode.SELECTED ? '1' : '0';
       }
-      console.log('');
-      console.log(columnsPossibilities[i].possibilities);
-      console.log(column);
-      console.log('');
+
       if (columnsPossibilities[i].possibilities.indexOf(column) == -1) {
         return false;
       }
